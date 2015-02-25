@@ -33,7 +33,7 @@ def import_events(client):
 
   # simulate user session:
   # generate a session ID
-  for loop in range(0, 5):
+  for loop in range(0, 50):
     session_id = uuid.uuid1().hex
     print "session", session_id
     referral_id = random.choice(refferal_ids)
@@ -111,6 +111,6 @@ if __name__ == '__main__':
   client = predictionio.EventClient(
     access_key=args.access_key,
     url=args.url,
-    threads=5,
-    qsize=500)
+    threads=4,
+    qsize=100)
   import_events(client)

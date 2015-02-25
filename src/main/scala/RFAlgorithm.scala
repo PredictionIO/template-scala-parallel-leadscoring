@@ -20,23 +20,30 @@ case class RFAlgorithmParams(
 
 class RFModel(
   val forest: RandomForestModel,
-  val landFeatureMap: BiMap[String, Int],
-  val referralFeatureMap: BiMap[String, Int],
-  val browserFeatureMap: BiMap[String, Int]
-) extends Serializable
+  val featureIndex: Map[String, Int],
+  val categoricalFeatureMap: Map[String, Map[String, Int]]
+) extends Serializable {
+  override def toString = {
+    s" forest: [${forest}]" +
+    s" featureIndex: ${featureIndex}" +
+    s" categoricalFeatureMap: ${categoricalFeatureMap}"
+  }
+}
 
 // extends P2LAlgorithm because the MLlib's RandomForestModel doesn't
 // contain RDD.
 class RFAlgorithm(val ap: RFAlgorithmParams)
   extends P2LAlgorithm[PreparedData, RFModel, Query, PredictedResult] {
 
+  @transient lazy val logger = Logger[this.type]
+
   def train(pd: PreparedData): RFModel = {
 
-    val categoricalFeaturesInfo = Map(
-      0 -> pd.landFeatureMap.size,
-      1 -> pd.referralFeatureMap.size,
-      2 -> pd.browserFeatureMap.size
-    )
+    val categoricalFeaturesInfo = pd.categoricalFeatureMap.map { case (f, m) =>
+      (pd.featureIndex(f), m.size)
+    }
+
+    logger.info(s"${categoricalFeaturesInfo}")
 
     val forestModel: RandomForestModel = RandomForest.trainRegressor(
       pd.labeledPoints,
@@ -49,22 +56,39 @@ class RFAlgorithm(val ap: RFAlgorithmParams)
 
     new RFModel(
       forest = forestModel,
-      landFeatureMap = pd.landFeatureMap,
-      referralFeatureMap = pd.referralFeatureMap,
-      browserFeatureMap = pd.browserFeatureMap
+      featureIndex = pd.featureIndex,
+      categoricalFeatureMap = pd.categoricalFeatureMap
     )
   }
 
   def predict(model: RFModel, query: Query): PredictedResult = {
 
-    val landFeature = model.landFeatureMap(query.landId).toDouble
-    val referralFeature = model.referralFeatureMap(query.referralId).toDouble
-    val browserFeature = model.browserFeatureMap(query.browser).toDouble
+    val featureIndex = model.featureIndex
+    val categoricalFeatureMap = model.categoricalFeatureMap
 
-    val feature = Array(
-      landFeature,
-      referralFeature,
-      browserFeature)
+    val landFeature = categoricalFeatureMap("land").get(query.landId)
+      .map(_.toDouble).getOrElse{
+        logger.info(s"Not found ${query.landId} in categoricalFeatureMap")
+        categoricalFeatureMap("land")("").toDouble
+      }
+    val referralFeature = categoricalFeatureMap("referral")
+      .get(query.referralId).map(_.toDouble).getOrElse{
+        logger.info(s"Not found ${query.referralId} in categoricalFeatureMap")
+        categoricalFeatureMap("referral")("").toDouble
+      }
+    val browserFeature = categoricalFeatureMap("browser")
+      .get(query.browser).map(_.toDouble).getOrElse{
+        logger.info(s"Not found ${query.browser} in categoricalFeatureMap")
+        categoricalFeatureMap("browser")("").toDouble
+      }
+    // reate feature Array
+    val feature = new Array[Double](model.featureIndex.size)
+    feature(featureIndex("land")) = landFeature
+      //categoricalFeatureMap("land").get(query.landId).toDouble
+    feature(featureIndex("referral")) = referralFeature
+      //categoricalFeatureMap("referral")(query.referralId).toDouble
+    feature(featureIndex("browser")) = browserFeature
+      //categoricalFeatureMap("browser")(query.browser).toDouble
 
     val score = model.forest.predict(Vectors.dense(feature))
     new PredictedResult(score)
