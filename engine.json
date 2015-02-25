@@ -1,0 +1,23 @@
+{
+  "id": "default",
+  "description": "Default settings",
+  "engineFactory": "org.template.leadscore.LeadScoreEngine",
+  "datasource": {
+    "params": {
+      "appId": 18
+    }
+  },
+  "algorithms": [
+    {
+      "name": "randomforest",
+      "params": {
+        "numClasses": 3,
+        "numTrees": 5,
+        "featureSubsetStrategy": "auto",
+        "impurity": "variance",
+        "maxDepth": 4,
+        "maxBins": 100
+      }
+    }
+  ]
+}

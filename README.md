@@ -1,2 +1,9 @@
-# template-scala-parallel-leadscore
-PredictionIO Lead Score Prediction Engine Template (Scala-based parallelized engine)
+# Lead Score Prediction Engine Template
+
+## Documentation
+
+Please refer to TODO
+
+## Versions
+
+### develop
