@@ -16,20 +16,29 @@ normal:
 ```
 $ curl -H "Content-Type: application/json" \
 -d '{
-  "landId" : "example.com/page9",
-  "referralId" : "refferal9.com",
+  "landingPageId" : "example.com/page9",
+  "referrerId" : "referrer10.com",
   "browser": "Firefox" }' \
 http://localhost:8000/queries.json \
--w %{time_connect}:%{time_starttransfer}:%{time_total}
+-w %{time_total}
 ```
-
 
 ```
 $ curl -H "Content-Type: application/json" \
 -d '{
-  "landId" : "x",
-  "referralId" : "y",
+  "landingPageId" : "example.com/page9",
+  "referrerId" : "referrer10.com",
+  "browser": "Chrome" }' \
+http://localhost:8000/queries.json \
+-w %{time_total}
+```
+
+```
+$ curl -H "Content-Type: application/json" \
+-d '{
+  "landingPageId" : "x",
+  "referrerId" : "y",
   "browser": "z" }' \
 http://localhost:8000/queries.json \
--w %{time_connect}:%{time_starttransfer}:%{time_total}
+-w %{time_total}
 ```

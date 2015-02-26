@@ -21,12 +21,12 @@ case class RFAlgorithmParams(
 class RFModel(
   val forest: RandomForestModel,
   val featureIndex: Map[String, Int],
-  val categoricalFeatureMap: Map[String, Map[String, Int]]
+  val featureCategoricalIntMap: Map[String, Map[String, Int]]
 ) extends Serializable {
   override def toString = {
     s" forest: [${forest}]" +
     s" featureIndex: ${featureIndex}" +
-    s" categoricalFeatureMap: ${categoricalFeatureMap}"
+    s" featureCategoricalIntMap: ${featureCategoricalIntMap}"
   }
 }
 
@@ -39,9 +39,10 @@ class RFAlgorithm(val ap: RFAlgorithmParams)
 
   def train(pd: PreparedData): RFModel = {
 
-    val categoricalFeaturesInfo = pd.categoricalFeatureMap.map { case (f, m) =>
-      (pd.featureIndex(f), m.size)
-    }
+    val categoricalFeaturesInfo = pd.featureCategoricalIntMap
+      .map { case (f, m) =>
+        (pd.featureIndex(f), m.size)
+      }
 
     logger.info(s"${categoricalFeaturesInfo}")
 
@@ -57,41 +58,68 @@ class RFAlgorithm(val ap: RFAlgorithmParams)
     new RFModel(
       forest = forestModel,
       featureIndex = pd.featureIndex,
-      categoricalFeatureMap = pd.categoricalFeatureMap
+      featureCategoricalIntMap = pd.featureCategoricalIntMap
     )
   }
 
   def predict(model: RFModel, query: Query): PredictedResult = {
 
     val featureIndex = model.featureIndex
-    val categoricalFeatureMap = model.categoricalFeatureMap
+    val featureCategoricalIntMap = model.featureCategoricalIntMap
 
-    val landFeature = categoricalFeatureMap("land").get(query.landId)
-      .map(_.toDouble).getOrElse{
-        logger.info(s"Not found ${query.landId} in categoricalFeatureMap")
-        categoricalFeatureMap("land")("").toDouble
-      }
-    val referralFeature = categoricalFeatureMap("referral")
-      .get(query.referralId).map(_.toDouble).getOrElse{
-        logger.info(s"Not found ${query.referralId} in categoricalFeatureMap")
-        categoricalFeatureMap("referral")("").toDouble
-      }
-    val browserFeature = categoricalFeatureMap("browser")
-      .get(query.browser).map(_.toDouble).getOrElse{
-        logger.info(s"Not found ${query.browser} in categoricalFeatureMap")
-        categoricalFeatureMap("browser")("").toDouble
-      }
-    // reate feature Array
+    val landingPageId = query.landingPageId
+    val referrerId = query.referrerId
+    val browser = query.browser
+
+    // look up categorical feature Int for landingPageId
+    val landingFeature = lookupCategoricalInt(
+      featureCategoricalIntMap = featureCategoricalIntMap,
+      feature = "landingPage",
+      value = landingPageId,
+      default = ""
+    ).toDouble
+
+
+    // look up categorical feature Int for referrerId
+    val referrerFeature = lookupCategoricalInt(
+      featureCategoricalIntMap = featureCategoricalIntMap,
+      feature = "referrer",
+      value = referrerId,
+      default = ""
+    ).toDouble
+
+    // look up categorical feature Int for brwoser
+    val browserFeature = lookupCategoricalInt(
+      featureCategoricalIntMap = featureCategoricalIntMap,
+      feature = "browser",
+      value = browser,
+      default = ""
+    ).toDouble
+
+    // create feature Array
     val feature = new Array[Double](model.featureIndex.size)
-    feature(featureIndex("land")) = landFeature
-      //categoricalFeatureMap("land").get(query.landId).toDouble
-    feature(featureIndex("referral")) = referralFeature
-      //categoricalFeatureMap("referral")(query.referralId).toDouble
+    feature(featureIndex("landingPage")) = landingFeature
+    feature(featureIndex("referrer")) = referrerFeature
     feature(featureIndex("browser")) = browserFeature
-      //categoricalFeatureMap("browser")(query.browser).toDouble
 
     val score = model.forest.predict(Vectors.dense(feature))
     new PredictedResult(score)
+  }
+
+  private def lookupCategoricalInt(
+    featureCategoricalIntMap: Map[String, Map[String, Int]],
+    feature: String,
+    value: String,
+    default: String): Int = {
+
+    featureCategoricalIntMap(feature)
+      .get(value)
+      .getOrElse {
+        logger.info(s"Unknown ${feature} ${value}." +
+          " Default feature value will be used.")
+        // use default feature value
+        featureCategoricalIntMap(feature)(default)
+      }
   }
 
 }

@@ -14,7 +14,7 @@ import grizzled.slf4j.Logger
 class PreparedData(
   val labeledPoints: RDD[LabeledPoint],
   val featureIndex: Map[String, Int],
-  val categoricalFeatureMap: Map[String, Map[String, Int]]
+  val featureCategoricalIntMap: Map[String, Map[String, Int]]
 ) extends Serializable
 
 
@@ -22,7 +22,7 @@ class Preparator extends PPreparator[TrainingData, PreparedData] {
 
   @transient lazy val logger = Logger[this.type]
 
-  private def categoricalMap(
+  private def createCategoricalIntMap(
     values: Array[String], // categorical values
     default: String // default cateegorical value
   ): Map[String, Int] = {
@@ -36,37 +36,38 @@ class Preparator extends PPreparator[TrainingData, PreparedData] {
 
   def prepare(sc: SparkContext, td: TrainingData): PreparedData = {
 
-    // create string to index BiMap
-    val landValues = td.session.map(_.landId).distinct.collect
-    val referralValues = td.session.map(_.referralId).distinct.collect
+    // find out all values of the each feature
+    val landingValues = td.session.map(_.landingPageId).distinct.collect
+    val referrerValues = td.session.map(_.referrerId).distinct.collect
     val browserValues = td.session.map(_.browser).distinct.collect
 
-    val categoricalFeatureMap = Map(
-      "land" -> categoricalMap(landValues, ""),
-      "referral" -> categoricalMap(referralValues, ""),
-      "browser" -> categoricalMap(browserValues, "")
+    // map feature value to integer for each categorical feature
+    val featureCategoricalIntMap = Map(
+      "landingPage" -> createCategoricalIntMap(landingValues, ""),
+      "referrer" -> createCategoricalIntMap(referrerValues, ""),
+      "browser" -> createCategoricalIntMap(browserValues, "")
     )
+    // index position of each feature in the vector
     val featureIndex = Map(
-      "land" -> 0,
-      "referral" -> 1,
+      "landingPage" -> 0,
+      "referrer" -> 1,
       "browser" -> 2
     )
 
+    // inject some default to cover default cases
     val defaults = Seq(
       new Session(
-        landId = "",
-        referralId = "",
+        landingPageId = "",
+        referrerId = "",
         browser = "",
         buy = false
       ),
       new Session(
-        landId = "",
-        referralId = "",
+        landingPageId = "",
+        referrerId = "",
         browser = "",
         buy = true
       ))
-
-
 
     val defaultRDD = sc.parallelize(defaults)
     val sessionRDD = td.session.union(defaultRDD)
@@ -76,12 +77,12 @@ class Preparator extends PPreparator[TrainingData, PreparedData] {
       val label = if (session.buy) 1.0 else 0.0
 
       val feature = new Array[Double](featureIndex.size)
-      feature(featureIndex("land")) =
-        categoricalFeatureMap("land")(session.landId).toDouble
-      feature(featureIndex("referral")) =
-        categoricalFeatureMap("referral")(session.referralId).toDouble
+      feature(featureIndex("landingPage")) =
+        featureCategoricalIntMap("landingPage")(session.landingPageId).toDouble
+      feature(featureIndex("referrer")) =
+        featureCategoricalIntMap("referrer")(session.referrerId).toDouble
       feature(featureIndex("browser")) =
-        categoricalFeatureMap("browser")(session.browser).toDouble
+        featureCategoricalIntMap("browser")(session.browser).toDouble
 
       LabeledPoint(label, Vectors.dense(feature))
     }.cache()
@@ -90,6 +91,6 @@ class Preparator extends PPreparator[TrainingData, PreparedData] {
     new PreparedData(
       labeledPoints = labeledPoints,
       featureIndex = featureIndex,
-      categoricalFeatureMap = categoricalFeatureMap)
+      featureCategoricalIntMap = featureCategoricalIntMap)
   }
 }

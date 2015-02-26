@@ -67,24 +67,24 @@ class DataSource(val dsp: DataSourceParams)
 
     val session: RDD[Session] = viewPage.cogroup(buyItem)
       .map { case (sessionId, (viewIter, buyIter)) =>
-        //
-        val land = viewIter.reduce{ (a, b) =>
+        // the first view event of the session is the landing event
+        val landing = viewIter.reduce{ (a, b) =>
           if (a.eventTime.isBefore(b.eventTime)) a else b
         }
-        // any buy after land
-        val buy = buyIter.filter( b => b.eventTime.isAfter(land.eventTime))
+        // any buy after landing
+        val buy = buyIter.filter( b => b.eventTime.isAfter(landing.eventTime))
           .nonEmpty
 
         try {
           new Session(
-            landId = land.targetEntityId.get,
-            referralId = land.properties.getOrElse[String]("referralId", ""),
-            browser = land.properties.getOrElse[String]("browser", ""),
+            landingPageId = landing.targetEntityId.get,
+            referrerId = landing.properties.getOrElse[String]("referrerId", ""),
+            browser = landing.properties.getOrElse[String]("browser", ""),
             buy = buy
           )
         } catch {
           case e: Exception => {
-            logger.error(s"Cannot create session data from ${land}. ${e}.")
+            logger.error(s"Cannot create session data from ${landing}. ${e}.")
             throw e
           }
         }
@@ -96,9 +96,9 @@ class DataSource(val dsp: DataSourceParams)
 
 
 case class Session(
-  landId: String, // landing page ID
-  referralId: String, // referral page ID
-  browser: String, // browser
+  landingPageId: String,
+  referrerId: String,
+  browser: String,
   buy: Boolean // buy or not
 ) extends Serializable
 

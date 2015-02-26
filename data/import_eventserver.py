@@ -24,8 +24,8 @@ def import_events(client):
   # generate 20 pageId
   page_ids = ["example.com/page%s" % i for i in range(1, 20+1)]
 
-  # generate 10 referralId
-  refferal_ids = ["refferal%s.com" % i for i in range(1, 10+1)]
+  # generate 10 referrerId
+  refferal_ids = ["referrer%s.com" % i for i in range(1, 10+1)]
 
   browsers = [ "Chrome", "Firefox", "Safari", "Internet Explorer" ]
 
@@ -36,11 +36,12 @@ def import_events(client):
   for loop in range(0, 50):
     session_id = uuid.uuid1().hex
     print "session", session_id
-    referral_id = random.choice(refferal_ids)
+    referrer_id = random.choice(refferal_ids)
     browser = random.choice(browsers)
     uid = random.choice(user_ids)
     page_id = random.choice(page_ids)
-    print "User", uid ,"views page", page_id
+    print "User", uid ,"lands on page", page_id, "referrer", referrer_id, \
+      "browser", browser
     client.create_event(
       event = "view",
       entity_type = "user",
@@ -49,7 +50,7 @@ def import_events(client):
       target_entity_id = page_id,
       properties = {
         "sessionId": session_id,
-        "referralId": referral_id,
+        "referrerId": referrer_id,
         "browser": browser
       }
     )
@@ -90,7 +91,7 @@ def import_events(client):
 
   # pick a user id
   # random start time
-  # view a random page, random referral, random browser
+  # view a random page, random referrer, random browser
   # random gap
   # more random visit
   # random gap

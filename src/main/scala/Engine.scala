@@ -4,8 +4,8 @@ import io.prediction.controller.IEngineFactory
 import io.prediction.controller.Engine
 
 case class Query(
-  landId: String,
-  referralId: String,
+  landingPageId: String,
+  referrerId: String,
   browser: String
 ) extends Serializable
 
