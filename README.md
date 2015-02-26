@@ -2,16 +2,14 @@
 
 ## Documentation
 
-Please refer to TODO
+Please refer to http://docs.prediction.io/templates/leadscore/quickstart/
 
 ## Versions
 
 ### develop
 
-
 ### Query
 
-normal:
 
 ```
 $ curl -H "Content-Type: application/json" \
