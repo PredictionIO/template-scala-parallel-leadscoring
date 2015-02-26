@@ -16,7 +16,8 @@
         "featureSubsetStrategy": "auto",
         "impurity": "variance",
         "maxDepth": 4,
-        "maxBins": 100
+        "maxBins": 100,
+        "seed" : 12345
       }
     }
   ]

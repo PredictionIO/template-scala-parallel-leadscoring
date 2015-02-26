@@ -15,7 +15,8 @@ case class RFAlgorithmParams(
   featureSubsetStrategy: String,
   impurity: String,
   maxDepth: Int,
-  maxBins: Int
+  maxBins: Int,
+  seed: Option[Int]
 ) extends Params
 
 class RFModel(
@@ -46,14 +47,18 @@ class RFAlgorithm(val ap: RFAlgorithmParams)
 
     logger.info(s"${categoricalFeaturesInfo}")
 
+    // use random seed if seed is not specified
+    val seed = ap.seed.getOrElse(scala.util.Random.nextInt())
+
     val forestModel: RandomForestModel = RandomForest.trainRegressor(
-      pd.labeledPoints,
-      categoricalFeaturesInfo,
-      ap.numTrees,
-      ap.featureSubsetStrategy,
-      ap.impurity,
-      ap.maxDepth,
-      ap.maxBins)
+      input = pd.labeledPoints,
+      categoricalFeaturesInfo = categoricalFeaturesInfo,
+      numTrees = ap.numTrees,
+      featureSubsetStrategy = ap.featureSubsetStrategy,
+      impurity = ap.impurity,
+      maxDepth = ap.maxDepth,
+      maxBins = ap.maxBins,
+      seed = seed)
 
     new RFModel(
       forest = forestModel,
