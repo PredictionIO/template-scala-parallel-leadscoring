@@ -73,7 +73,7 @@ class Preparator extends PPreparator[TrainingData, PreparedData] {
     val sessionRDD = td.session.union(defaultRDD)
 
     val labeledPoints: RDD[LabeledPoint] = sessionRDD.map { session =>
-      logger.info(s"${session}")
+      logger.debug(s"${session}")
       val label = if (session.buy) 1.0 else 0.0
 
       val feature = new Array[Double](featureIndex.size)
@@ -87,7 +87,7 @@ class Preparator extends PPreparator[TrainingData, PreparedData] {
       LabeledPoint(label, Vectors.dense(feature))
     }.cache()
 
-    logger.info(s"labelelPoints count: ${labeledPoints.count()}")
+    logger.debug(s"labelelPoints count: ${labeledPoints.count()}")
     new PreparedData(
       labeledPoints = labeledPoints,
       featureIndex = featureIndex,
