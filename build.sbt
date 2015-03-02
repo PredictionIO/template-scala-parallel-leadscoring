@@ -2,7 +2,7 @@ import AssemblyKeys._
 
 assemblySettings
 
-name := "template-scala-parallel-leadscore"
+name := "template-scala-parallel-leadscoring"
 
 organization := "io.prediction"
 

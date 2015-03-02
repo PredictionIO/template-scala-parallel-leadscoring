@@ -1,5 +1,5 @@
 """
-Import sample data for lead score prediction engine
+Import sample data for lead scoring engine
 """
 
 import predictionio

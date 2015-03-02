@@ -1,4 +1,4 @@
-package org.template.leadscore
+package org.template.leadscoring
 
 import io.prediction.controller.LServing
 

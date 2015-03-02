@@ -1,4 +1,4 @@
-package org.template.leadscore
+package org.template.leadscoring
 
 import io.prediction.controller.P2LAlgorithm
 import io.prediction.controller.Params
@@ -45,7 +45,7 @@ class RFAlgorithm(val ap: RFAlgorithmParams)
         (pd.featureIndex(f), m.size)
       }
 
-    logger.info(s"${categoricalFeaturesInfo}")
+    logger.info(s"categoricalFeaturesInfo: ${categoricalFeaturesInfo}")
 
     // use random seed if seed is not specified
     val seed = ap.seed.getOrElse(scala.util.Random.nextInt())

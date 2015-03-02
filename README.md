@@ -1,8 +1,8 @@
-# Lead Score Prediction Engine Template
+# Lead Scoring Engine Template
 
 ## Documentation
 
-Please refer to http://docs.prediction.io/templates/leadscore/quickstart/
+Please refer to http://docs.prediction.io/templates/leadscoring/quickstart/
 
 ## Versions
 
