@@ -4,6 +4,7 @@ import io.prediction.controller.P2LAlgorithm
 import io.prediction.controller.Params
 import io.prediction.data.storage.BiMap
 
+import org.apache.spark.SparkContext
 import org.apache.spark.mllib.tree.RandomForest
 import org.apache.spark.mllib.tree.model.RandomForestModel
 import org.apache.spark.mllib.linalg.Vectors
@@ -38,7 +39,7 @@ class RFAlgorithm(val ap: RFAlgorithmParams)
 
   @transient lazy val logger = Logger[this.type]
 
-  def train(pd: PreparedData): RFModel = {
+  def train(sc: SparkContext, pd: PreparedData): RFModel = {
 
     val categoricalFeaturesInfo = pd.featureCategoricalIntMap
       .map { case (f, m) =>
