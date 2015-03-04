@@ -6,10 +6,14 @@ Please refer to http://docs.prediction.io/templates/leadscoring/quickstart/
 
 ## Versions
 
-### develop
+### v0.1.0
 
-### Query
+- initial release (require PredictionIO 0.9.0)
 
+
+## Development Notes
+
+### Sample Query
 
 ```
 $ curl -H "Content-Type: application/json" \
