@@ -4,7 +4,7 @@
   "engineFactory": "org.template.leadscoring.LeadScoringEngine",
   "datasource": {
     "params": {
-      "appId": 18
+      "appName": "INVALID_APP_NAME"
     }
   },
   "algorithms": [

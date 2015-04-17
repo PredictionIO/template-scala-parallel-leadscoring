@@ -5,7 +5,7 @@ import io.prediction.controller.EmptyEvaluationInfo
 import io.prediction.controller.EmptyActualResult
 import io.prediction.controller.Params
 import io.prediction.data.storage.Event
-import io.prediction.data.storage.Storage
+import io.prediction.data.store.PEventStore
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -15,7 +15,7 @@ import org.apache.spark.mllib.linalg.Vectors
 
 import grizzled.slf4j.Logger
 
-case class DataSourceParams(appId: Int) extends Params
+case class DataSourceParams(appName: String) extends Params
 
 class DataSource(val dsp: DataSourceParams)
   extends PDataSource[TrainingData,
@@ -25,10 +25,9 @@ class DataSource(val dsp: DataSourceParams)
 
   override
   def readTraining(sc: SparkContext): TrainingData = {
-    val eventsDb = Storage.getPEvents()
 
-    val viewPage: RDD[(String, Event)] = eventsDb.find(
-      appId = dsp.appId,
+    val viewPage: RDD[(String, Event)] = PEventStore.find(
+      appName = dsp.appName,
       entityType = Some("user"),
       eventNames = Some(Seq("view")),
       // targetEntityType is optional field of an event.
@@ -46,8 +45,8 @@ class DataSource(val dsp: DataSourceParams)
         (sessionId, event)
       }
 
-    val buyItem: RDD[(String, Event)] = eventsDb.find(
-      appId = dsp.appId,
+    val buyItem: RDD[(String, Event)] = PEventStore.find(
+      appName = dsp.appName,
       entityType = Some("user"),
       eventNames = Some(Seq("buy")),
       // targetEntityType is optional field of an event.
