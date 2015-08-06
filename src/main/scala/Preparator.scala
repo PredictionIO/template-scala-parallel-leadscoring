@@ -23,38 +23,38 @@ class Preparator extends PPreparator[TrainingData, PreparedData] {
   @transient lazy val logger = Logger[this.type]
 
   private def createCategoricalIntMap(
-    values: Array[String], // categorical values
-    default: String // default cateegorical value
+    values: Array[String], // Categorical values.
+    default: String // Default categorical value.
   ): Map[String, Int] = {
     val m = values.zipWithIndex.toMap
     if (m.contains(default))
       m
     else
-      // add default value if origina values don't have it
+      // Add default value if original values don't have it.
       m + (default -> m.size)
   }
 
   def prepare(sc: SparkContext, td: TrainingData): PreparedData = {
 
-    // find out all values of the each feature
+    // Find out all values of the each feature.
     val landingValues = td.session.map(_.landingPageId).distinct.collect
     val referrerValues = td.session.map(_.referrerId).distinct.collect
     val browserValues = td.session.map(_.browser).distinct.collect
 
-    // map feature value to integer for each categorical feature
+    // Map feature value to integer for each categorical feature.
     val featureCategoricalIntMap = Map(
       "landingPage" -> createCategoricalIntMap(landingValues, ""),
       "referrer" -> createCategoricalIntMap(referrerValues, ""),
       "browser" -> createCategoricalIntMap(browserValues, "")
     )
-    // index position of each feature in the vector
+    // Index position of each feature in the vector.
     val featureIndex = Map(
       "landingPage" -> 0,
       "referrer" -> 1,
       "browser" -> 2
     )
 
-    // inject some default to cover default cases
+    // Inject some default to cover default cases.
     val defaults = Seq(
       new Session(
         landingPageId = "",
