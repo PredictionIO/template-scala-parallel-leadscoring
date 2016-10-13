@@ -1,7 +1,7 @@
 package org.template.leadscoring
 
-import io.prediction.controller.IEngineFactory
-import io.prediction.controller.Engine
+import org.apache.predictionio.controller.IEngineFactory
+import org.apache.predictionio.controller.Engine
 
 case class Query(
   landingPageId: String,
