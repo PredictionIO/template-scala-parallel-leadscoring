@@ -1,6 +1,6 @@
 package org.template.leadscoring
 
-import io.prediction.controller.LServing
+import org.apache.predictionio.controller.LServing
 
 import grizzled.slf4j.Logger
 
